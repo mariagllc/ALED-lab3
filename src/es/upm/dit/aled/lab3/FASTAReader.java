@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,8 +21,8 @@ import java.util.List;
  */
 public class FASTAReader {
 
-	protected byte[] content;
-	protected int validBytes;
+	protected byte[] content; //array de bytes que contiene la secuencia completa de nucleótidos de un archivo FASTA. Este será nuestro genoma.
+	protected int validBytes; // indica cuántos de los bytes de content son válidos. Es decir, que solo serán válidos los elementos desde content[0] hasta content[validBytes - 1].
 
 	/**
 	 * Creates a new FASTAReader from a FASTA file.
@@ -133,10 +134,19 @@ public class FASTAReader {
 	/*
 	 * Improved version of the compare method that stops checking elements of the
 	 * pattern when one has been found to be different.
+	 * devuelve FALSE en cuanto una base no coincide
 	 */
 	private boolean compareImproved(byte[] pattern, int position) throws FASTAException {
 		// TODO
-		return false;
+		if (position + pattern.length > validBytes) {
+			throw new FASTAException("Pattern goes beyond the end of the file.");
+		}
+			for (int i = 0; i < pattern.length; i++) {
+				if (pattern[i] != content[position + i]) {
+				return false;//porque los encuentra diferentes
+				}
+			}
+		return true;
 	}
 
 	/*
@@ -149,10 +159,19 @@ public class FASTAReader {
 	 */
 	private int compareNumErrors(byte[] pattern, int position) throws FASTAException {
 		// TODO
-		return -1;
+		if (position + pattern.length > validBytes) {
+			throw new FASTAException("Pattern goes beyond the end of the file.");
+		}
+		int numErrors = 0;
+		for(int i = 0; i < pattern.length; i++) {
+			if (pattern[i] != content[position + i]) {
+				numErrors ++;
+			}
+		}
+		return numErrors;
 	}
 
-	/**
+	/** Tiempo toal: 32302670458 con compare. Tiempo total con compareImroved:  31700511417
 	 * Implements a linear search to look for the provided pattern in the data
 	 * array. Returns a List of Integers that point to the initial positions of all
 	 * the occurrences of the pattern in the data.
@@ -161,12 +180,25 @@ public class FASTAReader {
 	 * @return All the positions of the first character of every occurrence of the
 	 *         pattern in the data.
 	 */
-	public List<Integer> search(byte[] pattern) {
-		// TODO
-		return null;
+	public List<Integer> search(byte[] pattern) { 
+		// TODO: utilizar metodo compare, me lo dan!! TIENE EXCEPTION
+		// ya me dan cómo comparar la secuencia, tengo que hacer lo de ir pasan do de bit en bit al empezar
+		//COMPLEJIDAD: O(n*m) siendo n la longitud del content y m la longtud del patron, son dos bucles for ≠ que se recorren ≠ veces
+		List<Integer> posiciones = new ArrayList<>();
+		for(int i = 0; i < validBytes - pattern.length; i++) {
+			try {
+				if(compareImproved(pattern, i)) {
+					posiciones.add(i);
+				}
+			}
+			catch (FASTAException e) {
+				break;
+			}
+		}
+		return posiciones;
 	}
 
-	/**
+	/** 
 	 * Implements a linear search to look for the provided pattern in the data array
 	 * but allowing a SNV (Single Nucleotide Variant). In SNV, one nucleotide is
 	 * allowed to be different from the pattern. Therefore, this method returns a
@@ -180,23 +212,46 @@ public class FASTAReader {
 	 */
 	public List<Integer> searchSNV(byte[] pattern) {
 		// TODO
-		return null;
+		List<Integer> posiciones = new ArrayList<>();
+		for(int i = 0; i < validBytes - pattern.length; i++) {
+			try {
+				if(compareNumErrors(pattern, i) <= 1) {
+					posiciones.add(i);
+				}
+			}
+			catch (FASTAException e) {
+				break;
+			}
+		
+		}
+		return posiciones;
 	}
 
 	public static void main(String[] args) {
-		long t1 = System.nanoTime();
-		FASTAReader reader = new FASTAReader(args[0]);
-		if (args.length == 1)
+		long t1 = System.nanoTime(); // empieza a contar para calcular cuantotardará en abrir el archivo
+		FASTAReader reader = new FASTAReader(args[0]); //crea un nuevo archivo FASTA d dimensión q le pasemos, con e archivo q le hemos pasado
+		if (args.length == 1) // si no le hemos pasado ninguna sec 
 			return;
 		System.out.println("Tiempo de apertura de fichero: " + (System.nanoTime() - t1));
-		long t2 = System.nanoTime();
-		List<Integer> posiciones = reader.search(args[1].getBytes());
+		long t2 = System.nanoTime(); //empieza otra cuenta
+		/*
+		List<Integer> posiciones = reader.search(args[1].getBytes()); // crea una lista con todas las coincidencias
 		System.out.println("Tiempo de búsqueda: " + (System.nanoTime() - t2));
-		if (posiciones.size() > 0) {
+		if (posiciones.size() > 0) { // muestra todos los tripletes o agrupaciones que haya encontrado que coincide en el archivo
 			for (Integer pos : posiciones)
 				System.out.println("Encontrado " + args[1] + " en " + pos);
 		} else
 			System.out.println("No he encontrado : " + args[1] + " en ningun sitio");
-		System.out.println("Tiempo total: " + (System.nanoTime() - t1));
+		*/
+		List<Integer> posicionesBis = reader.searchSNV(args[1].getBytes());
+		System.out.println("Tiempo de búsqueda: " + (System.nanoTime() - t2));
+		if (posicionesBis.size() > 0) {
+		    for (Integer pos : posicionesBis)
+		        System.out.println("Encontrado " + args[1] + " (o variante con 1 diferencia) en " + pos);
+		} else
+		    System.out.println("No he encontrado : " + args[1] + " ni variantes con 1 diferencia en ningun sitio");
+		    
+		System.out.println("Tiempo total: " + (System.nanoTime() - t1)); 
+	
 	}
 }
