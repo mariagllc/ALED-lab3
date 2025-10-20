@@ -92,7 +92,7 @@ public class FASTAReaderSuffixes extends FASTAReader {
 		while (index < pattern.length && (posSuffix + index) < validBytes && pattern[index] == content[posSuffix + index]) {
 			index++;
 	    }
-		 if (index == pattern.length /*&& suffixes[m].charAtSuffix(index) == null*/) { //el ínidce ya ha terminado los elementos del pattern, solo queda ver que en el suffix no hay tmp más elementos, q solo este CATANA ("y los últimos caracteres también coinciden")
+		 if (index == pattern.length && suffixes[m].charAt(index) == null) { //el ínidce ya ha terminado los elementos del pattern, solo queda ver que en el suffix no hay tmp más elementos, q solo este CATANA ("y los últimos caracteres también coinciden")
 	            // Coincidencia completa encontrada
 	            resultado.add(posSuffix);
 	            found = true;
