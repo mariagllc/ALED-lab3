@@ -67,7 +67,7 @@ public class FASTAReaderSuffixes extends FASTAReader {
 		}
 		System.out.println("-------------------------------------------------------------------------");
 	}
-	
+
 	/**
 	 * Implements a binary search to look for the provided pattern in the data
 	 * array. Returns a List of Integers that point to the initial positions of all
@@ -79,31 +79,53 @@ public class FASTAReaderSuffixes extends FASTAReader {
 	 */
 	@Override
 	public List<Integer> search(byte[] pattern) {
-		int lo=0, hi=suffixes.length-1;
-		boolean found = false; 
-		
+		// TODO
+		int lo = 0, hi = suffixes.length - 1;
+		boolean found = false;
+
 		List<Integer> resultado = new ArrayList<>();
-		
-		while (lo <= hi && !found) { //que tdv no se haya encontrado, q found siga siendo false
-		int index = 0; // rastrea el carácter actual que se está comparando con el pattern
-		int m = (int) Math.floor(lo + (hi - lo) / 2); //índice medio para cada iteración
-		int posSuffix = suffixes[m].getIndex(); // tuve que definir el método getIndex en la clase Suffix yo misma, para que no diese error, no se podía hacer la conversión directa
-		while (index < pattern.length && (posSuffix + index) < validBytes && pattern[index] == content[posSuffix + index]) {
-			index++;
-	    }
-		 if (index == pattern.length/*&& suffixes[m].charAtSuffix(index) == null*/) { //el ínidce ya ha terminado los elementos del pattern, solo queda ver que en el suffix no hay tmp más elementos, q solo este CATANA ("y los últimos caracteres también coinciden")
-	            // Coincidencia completa encontrada
-	            resultado.add(posSuffix);
-	            found = true;
-	        } else if ((posSuffix + index) >= validBytes || pattern[index] < content[posSuffix + index]) { //si no ha habido coincidencia y el pattern 
-	            hi = m --;
-	            index = 0;
-	        } else if (pattern[index] > content[posSuffix + index]) {
-	            lo = m ++;
-	            index = 0;
-	        }
+
+		while (lo <= hi && !found) { // que tdv no se haya encontrado, q found siga siendo false
+			int index = 0; // rastrea el carácter actual que se está comparando con el pattern
+			int m = (int) Math.floor(lo + (hi - lo) / 2); // índice medio para cada iteración
+			int posSuffix = suffixes[m].getIndex(); // tuve que definir el método getIndex en la clase Suffix yo misma,
+													// para que no diese error, no se podía hacer la conversión directa
+			while (index < pattern.length && (posSuffix + index) < validBytes
+					&& pattern[index] == content[posSuffix + index]) {
+				index++;
+			}
+			if (index == pattern.length /* && suffixes[m].charAt(index) == null */) { // el ínidce ya ha terminado los
+																						// elementos del pattern, solo
+																						// queda ver que en el suffix no
+																						// hay tmp más elementos, q solo
+																						// este CATANA ("y los últimos
+																						// caracteres también
+																						// coinciden")
+				// Coincidencia completa encontrada
+				resultado.add(posSuffix);
+				int posResult = posSuffix;
+				found = true;
+			} else if (pattern[index] < content[posSuffix + index]) { // || (posSuffix + index) >= validBytes
+				hi = m--;
+				index = 0;
+			} else if (pattern[index] > content[posSuffix + index]) {
+				lo = m++;
+				index = 0;
+			}
 		}
-	    return resultado;
+		
+		for (int i = resultado.get(0) + 1; i < validBytes; i++) { // +1 para no volver a guardar la posicion que
+																	// encontré on la primera busqueda, apartado 4
+			if (pattern[0] == content[i])
+				resultado.add(i);
+		}
+
+		for (int j = resultado.get(0) - 1; j >= 0; j--) { // -1 para no volver a guardar la posicion que encontré on la
+															// primera busqueda, apartado 4
+			if (pattern[0] == content[j])
+				resultado.add(j);
+		}
+		return resultado;
 	}
 
 	public static void main(String[] args) {

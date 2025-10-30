@@ -21,8 +21,10 @@ import java.util.List;
  */
 public class FASTAReader {
 
-	protected byte[] content; //array de bytes que contiene la secuencia completa de nucleótidos de un archivo FASTA. Este será nuestro genoma.
-	protected int validBytes; // indica cuántos de los bytes de content son válidos. Es decir, que solo serán válidos los elementos desde content[0] hasta content[validBytes - 1].
+	protected byte[] content; // array de bytes que contiene la secuencia completa de nucleótidos de un
+								// archivo FASTA. Este será nuestro genoma.
+	protected int validBytes; // indica cuántos de los bytes de content son válidos. Es decir, que solo serán
+								// válidos los elementos desde content[0] hasta content[validBytes - 1].
 
 	/**
 	 * Creates a new FASTAReader from a FASTA file.
@@ -180,18 +182,19 @@ public class FASTAReader {
 	 * @return All the positions of the first character of every occurrence of the
 	 *         pattern in the data.
 	 */
-	public List<Integer> search(byte[] pattern) { 
+	public List<Integer> search(byte[] pattern) {
 		// TODO: utilizar metodo compare, me lo dan!! TIENE EXCEPTION
-		// ya me dan cómo comparar la secuencia, tengo que hacer lo de ir pasan do de bit en bit al empezar
-		//COMPLEJIDAD: O(n*m) siendo n la longitud del content y m la longtud del patron, son dos bucles for ≠ que se recorren ≠ veces
+		// ya me dan cómo comparar la secuencia, tengo que hacer lo de ir pasan do de
+		// bit en bit al empezar
+		// COMPLEJIDAD: O(n*m) siendo n la longitud del content y m la longtud del
+		// patron, son dos bucles for ≠ que se recorren ≠ veces
 		List<Integer> posiciones = new ArrayList<>();
-		for(int i = 0; i < validBytes - pattern.length; i++) {
+		for (int i = 0; i < validBytes - pattern.length; i++) {
 			try {
-				if(compareImproved(pattern, i)) {
+				if (compareImproved(pattern, i)) {
 					posiciones.add(i);
 				}
-			}
-			catch (FASTAException e) {
+			} catch (FASTAException e) {
 				break;
 			}
 		}
@@ -229,29 +232,30 @@ public class FASTAReader {
 
 	public static void main(String[] args) {
 		long t1 = System.nanoTime(); // empieza a contar para calcular cuantotardará en abrir el archivo
-		FASTAReader reader = new FASTAReader(args[0]); //crea un nuevo archivo FASTA d dimensión q le pasemos, con e archivo q le hemos pasado
-		if (args.length == 1) // si no le hemos pasado ninguna sec 
+		FASTAReader reader = new FASTAReader(args[0]); // crea un nuevo archivo FASTA d dimensión q le pasemos, con e
+														// archivo q le hemos pasado
+		if (args.length == 1) // si no le hemos pasado ninguna sec
 			return;
 		System.out.println("Tiempo de apertura de fichero: " + (System.nanoTime() - t1));
-		long t2 = System.nanoTime(); //empieza otra cuenta
+		long t2 = System.nanoTime(); // empieza otra cuenta
 		/*
-		List<Integer> posiciones = reader.search(args[1].getBytes()); // crea una lista con todas las coincidencias
-		System.out.println("Tiempo de búsqueda: " + (System.nanoTime() - t2));
-		if (posiciones.size() > 0) { // muestra todos los tripletes o agrupaciones que haya encontrado que coincide en el archivo
-			for (Integer pos : posiciones)
-				System.out.println("Encontrado " + args[1] + " en " + pos);
-		} else
-			System.out.println("No he encontrado : " + args[1] + " en ningun sitio");
-		*/
+		 * List<Integer> posiciones = reader.search(args[1].getBytes()); crea una
+		 * lista con todas las coincidencias System.out.println("Tiempo de búsqueda: " +
+		 * (System.nanoTime() - t2)); if (posiciones.size() > 0) { // muestra todos los
+		 * tripletes o agrupaciones que haya encontrado que coincide en el archivo for
+		 * (Integer pos : posiciones) System.out.println("Encontrado " + args[1] +
+		 * " en " + pos); } else System.out.println("No he encontrado : " + args[1] +
+		 * " en ningun sitio");
+		 */
 		List<Integer> posicionesBis = reader.searchSNV(args[1].getBytes());
 		System.out.println("Tiempo de búsqueda: " + (System.nanoTime() - t2));
 		if (posicionesBis.size() > 0) {
-		    for (Integer pos : posicionesBis)
-		        System.out.println("Encontrado " + args[1] + " (o variante con 1 diferencia) en " + pos);
+			for (Integer pos : posicionesBis)
+				System.out.println("Encontrado " + args[1] + " (o variante con 1 diferencia) en " + pos);
 		} else
-		    System.out.println("No he encontrado : " + args[1] + " ni variantes con 1 diferencia en ningun sitio");
-		    
-		System.out.println("Tiempo total: " + (System.nanoTime() - t1)); 
-	
+			System.out.println("No he encontrado : " + args[1] + " ni variantes con 1 diferencia en ningun sitio");
+
+		System.out.println("Tiempo total: " + (System.nanoTime() - t1));
+
 	}
 }
